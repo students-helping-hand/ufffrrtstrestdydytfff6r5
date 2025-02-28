@@ -1,0 +1,363 @@
+<meta name='viewport' content='width=device-width, initial-scale=1'/><!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Magic Movie App</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <!-- Swiper Tabs -->
+    <div class="tab-container">
+        <div class="tab active" data-category="all">All Movies</div>
+        <div class="tab" data-category="bhojpuri">Bhojpuri</div>
+        <div class="tab" data-category="hollywood">Hollywood</div>
+        <div class="tab" data-category="cricket">Cricket</div>
+    </div>
+
+    <!-- Search Bar with Auto-Suggestions -->
+    <div class="search-container">
+        <input type="text" id="search" placeholder="Search movies...">
+        <button onclick="searchMovies()">🔍</button>
+        <button id="voice-search">🎙️</button>
+        <div id="suggestions"></div>
+    </div>
+
+    <!-- Featured Movie Banner (Only for All Movies) -->
+    <div class="banner" id="featured-banner">
+        <img id="banner-img" src="https://static1.cbrimages.com/wordpress/wp-content/uploads/2019/04/Avengers-Endgame-banner-poster.jpg" alt="Featured Movie">
+    </div>
+
+
+
+    <!-- Movie Grid -->
+    <div id="movie-container" class="movie-grid"></div>
+
+    <script src="script.js"></script>
+</body>
+</html><style>/* General Styles */
+body {
+    font-family: Arial, sans-serif;
+    background: linear-gradient(to bottom, #1a1a2e, #16213e);
+    color: white;
+    text-align: center;
+    margin: 0;
+    padding: 0;
+}
+
+/* Swiper Tabs */
+.tab-container {
+    display: flex;
+    overflow-x: auto;
+    white-space: nowrap;
+    padding: 10px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 3px solid #ff4b5c;
+    border-radius: 20px;
+    box-shadow: 0px 0px 15px #ff4b5c;
+}
+
+.tab {
+    padding: 10px 20px;
+    margin: 0 5px;
+    cursor: pointer;
+    color: #ddd;
+    border-radius: 20px;
+    transition: 0.3s;
+}
+
+.tab.active {
+    background: #ff4b5c;
+    color: white;
+    box-shadow: 0px 0px 10px #ff4b5c;
+}
+
+/* Search Bar */
+.search-container {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 5px;
+    margin: 15px 0;
+}
+
+#search {
+    width: 60%;
+    padding: 10px;
+    font-size: 16px;
+    border-radius: 5px;
+    border: 2px solid #ff4b5c;
+}
+
+.search-container button {
+    padding: 10px;
+    font-size: 18px;
+    border: none;
+    background: #ff4b5c;
+    color: white;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+#suggestions {
+    position: absolute;
+    top: 40px;
+    width: 60%;
+    background: white;
+    color: black;
+    text-align: left;
+    display: none;
+    border-radius: 5px;
+}
+
+.suggestion-item {
+    display: flex;
+    align-items: center;
+    padding: 5px;
+    cursor: pointer;
+}
+
+.suggestion-item img {
+    width: 40px;
+    height: 40px;
+    border-radius: 5px;
+    margin-right: 10px;
+}
+
+.suggestion-item:hover {
+    background: #ff4b5c;
+    color: white;
+}
+
+/* Banner */
+.banner {
+    margin: 10px auto;
+    width: 95%;
+    max-width: 600px;
+    border-radius: 10px;
+    overflow: hidden;
+    border: 3px solid #ff4b5c;
+    box-shadow: 0px 0px 20px rgba(255, 75, 92, 0.5);
+}
+
+.banner img {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+}
+
+/* Movie Grid */
+.movie-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+    padding: 15px;
+}
+
+/* Movie Card */
+.movie-card {
+    background: #222;
+    border-radius: 10px;
+    padding: 10px;
+    text-align: center;
+    box-shadow: 0 5px 10px rgba(0, 0, 0, 0.5);
+    transition: transform 0.3s;
+    border: 2px solid #ff4b5c;
+}
+
+.movie-card:hover {
+    transform: scale(1.05);
+}
+
+.movie-card img {
+    width: 100%;
+    height: 160px;
+    border-radius: 8px;
+    object-fit: cover;
+}
+
+.movie-info {
+    margin-top: 10px;
+}
+
+.movie-info h3 {
+    font-size: 16px;
+    margin: 5px 0;
+}
+
+.movie-info span {
+    font-size: 14px;
+    color: #ff4b5c;
+}</style>
+
+
+
+<script>
+
+
+
+// Movie List
+let movies = [
+    { 
+        title: "Man Of Steel", 
+        category: "hollywood",
+        img: "https://upload.wikimedia.org/wikipedia/en/5/50/Man_of_Steel_%28film%29_poster.jpg",
+        rating: 9.0, runtime: "200 min", genre: "Action",
+        wiki: "https://en.wikipedia.org/wiki/Man_of_Steel_(film)"
+    },
+    { 
+        title: "Captain America", 
+        category: "all", 
+        img: "https://pix1.wapkizfile.info/download/e2cca638986642f18b1c32f4415167fa/filmy4wap+wapkiz+com/Captain-America-Brave-New-World-2025-Hindi-English-Dual-Audio-MCU-Movie-HDRip-(filmyfly.fi).jpg", 
+        rating: 8.3, runtime: "120 min", genre: "Action",
+        wiki: "https://en.wikipedia.org/wiki/Captain_America:_The_First_Avenger"
+    },
+    { 
+        title: "Pushpa 2", 
+        category: "bhojpuri", 
+        img: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTp6cTjiNMh2JnCc76UPr2S0FN0y_iOhXoOhw&s", 
+        rating: 8.5, runtime: "150 min", genre: "Drama",
+        wiki: "https://en.wikipedia.org/wiki/Pushpa:_The_Rule"
+    },
+    { 
+        title: "Avengers", 
+        category: "hollywood", 
+        img: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRgG2LqEH29PppYl9mbpwMzWlWYBGRc7scgzw&s", 
+        rating: 8.8, runtime: "140 min", genre: "Superhero",
+        wiki: "https://en.wikipedia.org/wiki/The_Avengers_(2012_film)"
+    },
+    { 
+        title: "Sangrash", 
+        category: "bhojpuri", 
+        img: "https://i.ytimg.com/vi/yZzBKGyqELk/hq720.jpg?sqp=-oaymwEhCK4FEIIDSFryq4qpAxMIARUAAAAAGAElAADIQj0AgKJD&rs=AOn4CLDJXhB-YakwLQO3aNPWGwz0IhEe9g", 
+        rating: 9.0, runtime: "200 min", genre: "Drama",
+        wiki: "https://en.wikipedia.org/wiki/Indian_Premier_League"
+    }
+];
+
+// Function to create movie card with a clickable Wikipedia link
+function createMovieCard(movie) {
+    let movieCard = document.createElement("div");
+    movieCard.classList.add("movie-card");
+
+    movieCard.innerHTML = `
+        <a href="${movie.wiki}" target="_blank" style="text-decoration: none;">
+            <img src="${movie.img}" alt="${movie.title}" style="width: 100%; height: 160px; border-radius: 8px; object-fit: cover; cursor: pointer;">
+        </a>
+        <div class="movie-info">
+            <h3>${movie.title}</h3>
+            <span>⭐ ${movie.rating}</span>
+            <p>${movie.runtime} | ${movie.genre}</p>
+        </div>
+    `;
+
+    return movieCard;
+}
+
+// Function to load movies by category
+function loadMovies(category = "all") {
+    let container = document.getElementById("movie-container");
+    container.innerHTML = "";
+    
+    let filteredMovies = movies.filter(movie => category === "all" || movie.category === category);
+    
+    filteredMovies.forEach(movie => {
+        let movieCard = createMovieCard(movie);
+        container.appendChild(movieCard);
+    });
+
+    document.getElementById("featured-banner").style.display = (category === "all") ? "block" : "none";
+}
+
+// Change Active Tab
+document.querySelectorAll(".tab").forEach(tab => {
+    tab.addEventListener("click", function () {
+        document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
+        this.classList.add("active");
+        loadMovies(this.dataset.category);
+    });
+});
+
+// Search with Auto-Suggestions (Image + Name)
+document.getElementById("search").addEventListener("input", function () {
+    let query = this.value.toLowerCase();
+    let suggestions = document.getElementById("suggestions");
+    suggestions.innerHTML = "";
+
+    if (query.length > 0) {
+        let matchedMovies = movies.filter(movie => movie.title.toLowerCase().includes(query));
+        suggestions.style.display = matchedMovies.length > 0 ? "block" : "none";
+
+        matchedMovies.forEach(movie => {
+            let suggestion = document.createElement("div");
+            suggestion.classList.add("suggestion-item");
+            suggestion.innerHTML = `<img src="${movie.img}" alt="${movie.title}"><span>${movie.title}</span>`;
+            suggestion.onclick = function () {
+                document.getElementById("search").value = movie.title;
+                searchMovies();
+                suggestions.style.display = "none";
+            };
+            suggestions.appendChild(suggestion);
+        });
+    } else {
+        suggestions.style.display = "none";
+    }
+});
+
+// Search Movies
+function searchMovies() {
+    let query = document.getElementById("search").value.toLowerCase();
+    let container = document.getElementById("movie-container");
+    container.innerHTML = "";
+
+    let matchedMovies = movies.filter(movie => movie.title.toLowerCase().includes(query));
+
+    if (matchedMovies.length > 0) {
+        matchedMovies.forEach(movie => {
+            let movieCard = createMovieCard(movie);
+            container.appendChild(movieCard);
+        });
+    } else {
+        container.innerHTML = "<h3>No movie found</h3>";
+    }
+}
+document.getElementById("voice-search").addEventListener("click", function () {
+    navigator.mediaDevices.getUserMedia({ audio: true })
+        .then(function (stream) {
+            console.log("Microphone permission granted");
+            startVoiceRecognition(); // Microphone milne ke baad recognition start karega
+        })
+        .catch(function (error) {
+            alert("⚠️ Please allow microphone access to use voice search!");
+            console.error("Microphone permission denied:", error);
+        });
+});
+
+
+function startVoiceRecognition() {
+    try {
+        let recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+        recognition.lang = "en-US"; // Language set karein
+        recognition.start();
+
+        recognition.onresult = function (event) {
+            let speechResult = event.results[0][0].transcript;
+            document.getElementById("search").value = speechResult;
+            searchMovies(); // Jo bola usko search kare
+        };
+
+        recognition.onerror = function (event) {
+            alert("Voice recognition error: " + event.error);
+            console.error("Voice recognition error:", event.error);
+        };
+    } catch (error) {
+        alert("Speech Recognition is not supported in this browser.");
+        console.error("Speech Recognition error:", error);
+    }
+}
+
+
+
+</script>
